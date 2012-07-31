@@ -25,7 +25,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.support.v4.app.NavUtils;
 
 public class WAViewerActivity extends Activity implements OnClickListener{
 	// -----------------------------------
@@ -33,6 +32,7 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 	// -----------------------------------
 	private final String TAG = "WAViewerActivity";
 	private final String WA_URL = "http://api.wolframalpha.com/v2/query?input=pi&appid=XXXX";
+	private final String APPID = "HWET3H-LKJPV39GHV";
 	
 	// -----------------------------------
 	// instance variables
