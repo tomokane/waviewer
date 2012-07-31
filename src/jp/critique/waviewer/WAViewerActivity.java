@@ -1,6 +1,10 @@
 package jp.critique.waviewer;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -53,6 +57,23 @@ public class WAViewerActivity extends Activity implements OnClickListener{
         inputText = (EditText) findViewById(R.id.inputText);
         
         submitQuery.setOnClickListener(this);
+        
+        HttpURLConnection http = null;
+        InputStream in = null;
+        
+        
+        try {
+			URL url = new URL(WA_URL);
+			http = (HttpURLConnection) url.openConnection();
+			http.setRequestMethod("GET");
+			http.connect();
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         
     }
 
