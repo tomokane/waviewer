@@ -17,7 +17,9 @@ import org.apache.http.util.EntityUtils;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,7 +39,7 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 	// -----------------------------------
 	// instance variables
 	// -----------------------------------
-	private String appid = "xxxxx";
+	private String appid = "HWET3H-LKJPV39GHV";
 	private Uri.Builder builder;
 	
 	private DefaultHttpClient client;
@@ -48,34 +50,50 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 	private Button submitQuery;
 	private EditText inputText;
 	
-    @Override
+	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_waviewer);
+        
+        checkHasAppid();
+        
+        client = new DefaultHttpClient();
         
         submitQuery = (Button) findViewById(R.id.submitQuery);
         inputText = (EditText) findViewById(R.id.inputText);
         
         submitQuery.setOnClickListener(this);
         
-        HttpURLConnection http = null;
-        InputStream in = null;
-        
-        
-        try {
-			URL url = new URL(WA_URL);
-			http = (HttpURLConnection) url.openConnection();
-			http.setRequestMethod("GET");
-			http.connect();
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//        HttpURLConnection http = null;
+//        InputStream in = null;
+//        
+//        
+//        try {
+//			URL url = new URL(WA_URL);
+//			http = (HttpURLConnection) url.openConnection();
+//			http.setRequestMethod("GET");
+//			http.connect();
+//		} catch (MalformedURLException e) {
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
         
     }
+
+	/**
+	 * 
+	 */
+	@SuppressLint("NewApi")
+	private void checkHasAppid() {
+		String id = SubmitAppidActivity.getID(getBaseContext());
+        Log.d(TAG,id);
+        
+        if(id.isEmpty()) {
+        	Intent preferenceIntent = new Intent(this, SubmitAppidActivity.class);
+        	startActivity(preferenceIntent);
+        }
+	}
 
 	/**
 	 * @param search keyword
@@ -88,8 +106,9 @@ public class WAViewerActivity extends Activity implements OnClickListener{
         builder.path("/v2/query");
         
         builder.appendQueryParameter("appid", appid);
+        builder.appendQueryParameter("format", "image,plaintext");
         
-        builder.appendQueryParameter("in", keyword);
+        builder.appendQueryParameter("input", keyword);
         
         return builder.build().toString();
 	}
@@ -99,6 +118,16 @@ public class WAViewerActivity extends Activity implements OnClickListener{
         getMenuInflater().inflate(R.menu.activity_waviewer, menu);
         return true;
     }
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+    	Intent preferenceIntent = new Intent(this, SubmitAppidActivity.class);
+    	startActivity(preferenceIntent);
+		return super.onOptionsItemSelected(item);
+	}
 
 	public void onClick(View v) {
 		String keyword = inputText.getText().toString();
@@ -110,6 +139,8 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 
 				public String handleResponse(HttpResponse response)
 						throws ClientProtocolException, IOException {
+					Log.d(TAG,"response");
+
 					switch (response.getStatusLine().getStatusCode()) {
 					case HttpStatus.SC_OK:
 						
