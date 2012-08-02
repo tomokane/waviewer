@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.http.HttpResponse;
@@ -19,7 +21,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,8 +39,11 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 	// constant variables
 	// -----------------------------------
 	private final String TAG = "WAViewerActivity";
+	
 	private final String WA_URL = "http://api.wolframalpha.com/v2/query?input=pi&appid=XXXX";
 	private final String APPID = "HWET3H-LKJPV39GHV";
+	
+	private final String SEARCH_ACTION = "jp.critique.waviewer.SEARCH";
 	
 	// -----------------------------------
 	// instance variables
@@ -49,6 +58,8 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 	// UI instance
 	private Button submitQuery;
 	private EditText inputText;
+
+    private ProgressDialog progress;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -64,20 +75,6 @@ public class WAViewerActivity extends Activity implements OnClickListener{
         
         submitQuery.setOnClickListener(this);
         
-//        HttpURLConnection http = null;
-//        InputStream in = null;
-//        
-//        
-//        try {
-//			URL url = new URL(WA_URL);
-//			http = (HttpURLConnection) url.openConnection();
-//			http.setRequestMethod("GET");
-//			http.connect();
-//		} catch (MalformedURLException e) {
-//			e.printStackTrace();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
         
     }
 
@@ -130,37 +127,48 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 	}
 
 	public void onClick(View v) {
-		String keyword = inputText.getText().toString();
-		
-		HttpGet request = new HttpGet(createQuery(keyword));
-		
-		try {
-			String result = client.execute(request, new ResponseHandler<String>() {
-
-				public String handleResponse(HttpResponse response)
-						throws ClientProtocolException, IOException {
-					Log.d(TAG,"response");
-
-					switch (response.getStatusLine().getStatusCode()) {
-					case HttpStatus.SC_OK:
-						
-						return EntityUtils.toString(response.getEntity(), "UTF-8");
-					case HttpStatus.SC_NOT_FOUND:
-						throw new RuntimeException("404 Not found.");
-
-					default:
-						throw new RuntimeException("Error");
-					}
-				}
-			});
-			Log.d(TAG,result);
-		} catch (ClientProtocolException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+        try {
+            String keyword = inputText.getText().toString();
+            HttpGet request = new HttpGet(new URI(createQuery(keyword)));
+            RestTask task = new RestTask(this, SEARCH_ACTION);
+            task.execute(request);
+            progress = ProgressDialog.show(this, "Searching", "Waiting For Results...", true);
+        } catch (URISyntaxException e1) {
+            e1.printStackTrace();
+        }
 		
 	}
+
+    /* (non-Javadoc)
+     * @see android.app.Activity#onResume()
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(receiver, new IntentFilter(SEARCH_ACTION));
+    }
+
+    /* (non-Javadoc)
+     * @see android.app.Activity#onPause()
+     */
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(receiver);
+    }
+    
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(progress != null) {
+                progress.dismiss();
+            }
+            
+            String response = intent.getStringExtra(RestTask.HTTP_RESPONSE);
+            
+        }
+    };
 
     
 }
