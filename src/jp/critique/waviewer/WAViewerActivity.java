@@ -2,11 +2,19 @@ package jp.critique.waviewer;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import jp.critique.waviewer.WAFeedHandler.PodItem;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -16,6 +24,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -31,8 +41,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 
 public class WAViewerActivity extends Activity implements OnClickListener{
 	// -----------------------------------
@@ -51,6 +63,8 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 	private String appid = "HWET3H-LKJPV39GHV";
 	private Uri.Builder builder;
 	
+	private ArrayAdapter<PodItem> adapter;
+	
 	private DefaultHttpClient client;
 	private HttpUriRequest method;
 	private HttpResponse response = null;
@@ -58,6 +72,7 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 	// UI instance
 	private Button submitQuery;
 	private EditText inputText;
+	private ListView listView;
 
     private ProgressDialog progress;
 	
@@ -68,10 +83,15 @@ public class WAViewerActivity extends Activity implements OnClickListener{
         
         checkHasAppid();
         
-        client = new DefaultHttpClient();
+//        client = new DefaultHttpClient();
         
         submitQuery = (Button) findViewById(R.id.submitQuery);
         inputText = (EditText) findViewById(R.id.inputText);
+        listView = (ListView) findViewById(R.id.listView1);
+        
+        adapter = new ArrayAdapter<PodItem>(this, android.R.layout.simple_list_item_1, android.R.id.text1);
+        
+        listView.setAdapter(adapter);
         
         submitQuery.setOnClickListener(this);
         
@@ -84,7 +104,6 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 	@SuppressLint("NewApi")
 	private void checkHasAppid() {
 		String id = SubmitAppidActivity.getID(getBaseContext());
-        Log.d(TAG,id);
         
         if(id.isEmpty()) {
         	Intent preferenceIntent = new Intent(this, SubmitAppidActivity.class);
@@ -129,6 +148,7 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 	public void onClick(View v) {
         try {
             String keyword = inputText.getText().toString();
+            Log.d(TAG + "::onClick", createQuery(keyword));
             HttpGet request = new HttpGet(new URI(createQuery(keyword)));
             RestTask task = new RestTask(this, SEARCH_ACTION);
             task.execute(request);
@@ -166,6 +186,29 @@ public class WAViewerActivity extends Activity implements OnClickListener{
             }
             
             String response = intent.getStringExtra(RestTask.HTTP_RESPONSE);
+            
+            Log.d(TAG,response);
+            
+            try {
+            	SAXParserFactory factory = SAXParserFactory.newInstance();
+				SAXParser p = factory.newSAXParser();
+				
+	            WAFeedHandler parser = new WAFeedHandler();
+	            
+	            p.parse(new InputSource(new StringReader(response)), parser);
+	            
+	            for(PodItem item : parser.getParsedItems()) {
+	            	adapter.add(item);
+	            }
+	            adapter.notifyDataSetChanged();
+	            
+			} catch (ParserConfigurationException e) {
+				e.printStackTrace();
+			} catch (SAXException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
             
         }
     };
