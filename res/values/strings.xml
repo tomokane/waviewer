@@ -1,8 +1,10 @@
 <resources>
 
-    <string name="app_name">waviewer</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="app_name">WalframAlpha</string>
     <string name="menu_settings">Settings</string>
-    <string name="title_activity_waviewer">WAViewerActivity</string>
+    <string name="title_activity_waviewer">WalframAlpha</string>
+    <string name="schemeHttp">http</string>
+    <string name="api_wolframalpha_com">api.wolframalpha.com</string>
+    <string name="pathForApi">/v2/query</string>
 
 </resources>

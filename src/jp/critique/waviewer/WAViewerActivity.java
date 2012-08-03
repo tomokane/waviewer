@@ -52,9 +52,6 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 	// -----------------------------------
 	private final String TAG = "WAViewerActivity";
 	
-	private final String WA_URL = "http://api.wolframalpha.com/v2/query?input=pi&appid=XXXX";
-	private final String APPID = "HWET3H-LKJPV39GHV";
-	
 	private final String SEARCH_ACTION = "jp.critique.waviewer.SEARCH";
 	
 	// -----------------------------------
@@ -64,10 +61,6 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 	private Uri.Builder builder;
 	
 	private ArrayAdapter<PodItem> adapter;
-	
-	private DefaultHttpClient client;
-	private HttpUriRequest method;
-	private HttpResponse response = null;
 	
 	// UI instance
 	private Button submitQuery;
@@ -81,7 +74,6 @@ public class WAViewerActivity extends Activity implements OnClickListener{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_waviewer);
         
-        checkHasAppid();
         
 //        client = new DefaultHttpClient();
         
@@ -108,6 +100,8 @@ public class WAViewerActivity extends Activity implements OnClickListener{
         if(id.isEmpty()) {
         	Intent preferenceIntent = new Intent(this, SubmitAppidActivity.class);
         	startActivity(preferenceIntent);
+        } else {
+        	appid = id;
         }
 	}
 
@@ -117,9 +111,9 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 	 */
 	private String createQuery(String keyword) {
 		builder = new Uri.Builder();
-        builder.scheme("http");
-        builder.encodedAuthority("api.wolframalpha.com");
-        builder.path("/v2/query");
+        builder.scheme(getString(R.string.schemeHttp));
+        builder.encodedAuthority(getString(R.string.api_wolframalpha_com));
+        builder.path(getString(R.string.pathForApi));
         
         builder.appendQueryParameter("appid", appid);
         builder.appendQueryParameter("format", "image,plaintext");
@@ -152,6 +146,7 @@ public class WAViewerActivity extends Activity implements OnClickListener{
             HttpGet request = new HttpGet(new URI(createQuery(keyword)));
             RestTask task = new RestTask(this, SEARCH_ACTION);
             task.execute(request);
+            adapter.clear();
             progress = ProgressDialog.show(this, "Searching", "Waiting For Results...", true);
         } catch (URISyntaxException e1) {
             e1.printStackTrace();
@@ -166,6 +161,8 @@ public class WAViewerActivity extends Activity implements OnClickListener{
     protected void onResume() {
         super.onResume();
         registerReceiver(receiver, new IntentFilter(SEARCH_ACTION));
+        checkHasAppid();
+        this.setTitle(appid);
     }
 
     /* (non-Javadoc)

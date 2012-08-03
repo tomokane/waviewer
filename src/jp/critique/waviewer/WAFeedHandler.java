@@ -32,7 +32,7 @@ public class WAFeedHandler extends DefaultHandler {
         
         @Override
         public String toString() {
-            return title;
+            return plainText;
         }
     }
     
@@ -65,7 +65,6 @@ public class WAFeedHandler extends DefaultHandler {
         if(localName.equalsIgnoreCase(POD)) {
             item = new PodItem();
             for (int i = 0; i < attributes.getLength(); i++) {// get title
-                Log.d(TAG,attributes.getLocalName(i));
                 if(attributes.getLocalName(i).equals("title")) {
                     item.title = attributes.getValue(i);
                 }
@@ -73,7 +72,6 @@ public class WAFeedHandler extends DefaultHandler {
             inPod = true;
         } else if (localName.equalsIgnoreCase(IMG) && inPod) {// get image url
             for (int i = 0; i < attributes.getLength(); i++) {
-                Log.d(TAG,attributes.getLocalName(i));
                 if(attributes.getLocalName(i).equals("src")) {
                     item.imgUrl = attributes.getValue(i);
                 }
