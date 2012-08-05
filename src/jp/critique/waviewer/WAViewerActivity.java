@@ -14,8 +14,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import jp.critique.waviewer.WAFeedHandler.PodItem;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -41,6 +39,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -60,7 +59,7 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 	private String appid = "HWET3H-LKJPV39GHV";
 	private Uri.Builder builder;
 	
-	private ArrayAdapter<PodItem> adapter;
+	private WAPodAdapter adapter;
 	
 	// UI instance
 	private Button submitQuery;
@@ -75,13 +74,12 @@ public class WAViewerActivity extends Activity implements OnClickListener{
         setContentView(R.layout.activity_waviewer);
         
         
-//        client = new DefaultHttpClient();
         
         submitQuery = (Button) findViewById(R.id.submitQuery);
         inputText = (EditText) findViewById(R.id.inputText);
         listView = (ListView) findViewById(R.id.listView1);
         
-        adapter = new ArrayAdapter<PodItem>(this, android.R.layout.simple_list_item_1, android.R.id.text1);
+        adapter = new WAPodAdapter(this);
         
         listView.setAdapter(adapter);
         
@@ -141,17 +139,24 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 
 	public void onClick(View v) {
         try {
+            hideKeyboard();
+            
             String keyword = inputText.getText().toString();
             Log.d(TAG + "::onClick", createQuery(keyword));
             HttpGet request = new HttpGet(new URI(createQuery(keyword)));
             RestTask task = new RestTask(this, SEARCH_ACTION);
             task.execute(request);
-            adapter.clear();
+            adapter.clearResults();
             progress = ProgressDialog.show(this, "Searching", "Waiting For Results...", true);
         } catch (URISyntaxException e1) {
             e1.printStackTrace();
         }
 		
+	}
+	
+	public void hideKeyboard() {
+	    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+	    imm.hideSoftInputFromWindow(inputText.getWindowToken(), 0);
 	}
 
     /* (non-Javadoc)
@@ -195,7 +200,7 @@ public class WAViewerActivity extends Activity implements OnClickListener{
 	            p.parse(new InputSource(new StringReader(response)), parser);
 	            
 	            for(PodItem item : parser.getParsedItems()) {
-	            	adapter.add(item);
+	            	adapter.addResults(item);
 	            }
 	            adapter.notifyDataSetChanged();
 	            

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+ xmlns:android="http://schemas.android.com/apk/res/android"
+ android:orientation="vertical"
+ android:layout_width="match_parent"
+ android:layout_height="match_parent">
+
+ <TextView
+  android:id="@+id/podTitle"
+  style="@android:style/TextAppearance.Medium"
+  android:text="title"
+  android:textStyle="bold"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content" />
+
+ <TextView
+  android:id="@+id/podPlainText"
+  style="@android:style/TextAppearance.Small"
+  android:layout_marginBottom="10dp"
+  android:text="plaintext"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content" />
+
+ <ImageView
+  android:id="@+id/podImage"
+  android:adjustViewBounds="true"
+  android:scaleType="fitXY"
+  android:layout_gravity="left"
+  android:layout_marginBottom="10dp"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content" />
+</LinearLayout>

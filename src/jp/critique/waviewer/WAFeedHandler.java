@@ -25,16 +25,6 @@ public class WAFeedHandler extends DefaultHandler {
     private final String TEXT = "plaintext";
     private final String IMG = "img";
     
-    public class PodItem {
-        public String title;
-        public String plainText;
-        public String imgUrl;
-        
-        @Override
-        public String toString() {
-            return plainText;
-        }
-    }
     
     private StringBuffer buf;
     private ArrayList<PodItem> podItems;

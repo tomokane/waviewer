@@ -11,9 +11,10 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_toLeftOf="@+id/submitQuery"
+        android:maxLines="1"
+        android:singleLine="true"
         android:ems="10" >
 
-        <requestFocus />
     </EditText>
 
     <Button
